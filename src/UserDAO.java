@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.*;
 
 public class UserDAO {
     private Connection connection;
@@ -20,14 +21,75 @@ public class UserDAO {
                 user = new User();
                 user.setUserID(rs.getInt("user_id"));
                 user.setUsername(rs.getString("username"));
-                // Assuming we don't want to retrieve the password for security reasons
-                user.setRole(rs.getString("role")); // Directly get the role as a string
+
+                user.setRole(rs.getString("role"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return user;
     }
+    public boolean addUser(User user) {
+        String sql = "INSERT INTO Users (username, password, role) VALUES (?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, "Sales Assistant");
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateUser(User user) {
+        String sql = "UPDATE Users SET username = ?, password = ?, role = ? WHERE user_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getRole());
+            pstmt.setInt(4, user.getUserID());
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteUser(User user) {
+        String sql = "DELETE FROM Users WHERE user_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, user.getUserID());
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM Users";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                User user = new User();
+                user.setUserID(rs.getInt("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setRole(rs.getString("role"));
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+
+
+
 
 }
 class User {

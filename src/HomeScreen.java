@@ -60,8 +60,8 @@ public class HomeScreen extends JFrame {
 
         loginPanel.add(selectRoleLabel);
         loginPanel.add(roleComboBox);
-        loginPanel.add(usernamePanel); // Add the wrapper panel instead of the field directly
-        loginPanel.add(passwordPanel); // Add the wrapper panel instead of the field directly
+        loginPanel.add(usernamePanel);
+        loginPanel.add(passwordPanel);
         loginPanel.add(loginButton);
 
         // Add the login panel to the frame
@@ -83,7 +83,12 @@ public class HomeScreen extends JFrame {
                             "Login successful! Welcome, " + selectedRole,
                             "Success",
                             JOptionPane.INFORMATION_MESSAGE);
-                    // Proceed to the next screen based on the role
+                    if("Manager".equalsIgnoreCase(selectedRole)){
+                        ManagerDashboard managerDashboard = new ManagerDashboard();
+                        managerDashboard.setVisible(true);
+                        HomeScreen.this.dispose();
+                    }
+
                 } else {
                     // Failed login
                     JOptionPane.showMessageDialog(HomeScreen.this,

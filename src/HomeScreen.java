@@ -84,7 +84,7 @@ public class HomeScreen extends JFrame {
                             "Success",
                             JOptionPane.INFORMATION_MESSAGE);
                     if("Manager".equalsIgnoreCase(selectedRole)){
-                        ManagerDashboard managerDashboard = new ManagerDashboard();
+                        ManagerDashboard managerDashboard = new ManagerDashboard(userService);
                         managerDashboard.setVisible(true);
                         HomeScreen.this.dispose();
                     }
@@ -99,8 +99,6 @@ public class HomeScreen extends JFrame {
             }
         });
     }
-
-
 
     public static void main(String[] args) {
         try {

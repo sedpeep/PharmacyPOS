@@ -17,8 +17,8 @@ public class UserService {
     public boolean updateUser(User user){
         return userDAO.updateUser(user);
     }
-    public  boolean deleteUser(User user){
-        return  userDAO.deleteUser(user);
+    public  boolean deleteUser(int id){
+        return  userDAO.deleteUser(id);
     }
     public List<User> getAllUsers(){
         return userDAO.getAllUsers();

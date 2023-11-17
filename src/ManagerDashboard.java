@@ -8,15 +8,15 @@ public class ManagerDashboard extends JFrame {
     private JMenu fileMenu, manageMenu, reportsMenu, systemMenu;
     private JMenuItem exitItem, manageUsersItem, manageProductsItem, manageInventoryItem, salesReportItem, inventoryReportItem, systemSettingsItem;
 
-    public ManagerDashboard() {
+    public ManagerDashboard(UserService userService) {
         setTitle("Manager Dashboard");
         setSize(800, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        initComponents();
+        initComponents(userService);
     }
 
-    private void initComponents() {
+    private void initComponents(UserService userService) {
         menuBar = new JMenuBar();
 
         fileMenu = new JMenu("File");
@@ -51,32 +51,26 @@ public class ManagerDashboard extends JFrame {
 
 
         setJMenuBar(menuBar);
-        initializeMenuListners();
+        initializeMenuListners(userService);
 
 
     }
 
-    private void initializeMenuListners() {
+    private void initializeMenuListners(UserService userService) {
         manageUsersItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showManagementPanel();
+                showUserManagementPanel(userService);
             }
         });
     }
-    private void showUserManagementPanel() {
-
-        UserManagementPanel userManagementPanel = new UserManagementPanel();
+    private void showUserManagementPanel(UserService userService) {
+        UserManagementPanel userManagementPanel = new UserManagementPanel(userService);
         setContentPane(userManagementPanel);
         validate();
         repaint();
     }
 
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            ManagerDashboard managerDashboard = new ManagerDashboard();
-            managerDashboard.setVisible(true);
-        });
-    }
+
 }

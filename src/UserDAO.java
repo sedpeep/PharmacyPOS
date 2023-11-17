@@ -57,10 +57,10 @@ public class UserDAO {
         }
     }
 
-    public boolean deleteUser(User user) {
+    public boolean deleteUser(int userID) {
         String sql = "DELETE FROM Users WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, user.getUserID());
+            pstmt.setInt(1, userID);
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
@@ -134,5 +134,9 @@ class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+    @Override
+    public String toString() {
+        return this.username + " (" + this.role + ")";
     }
 }

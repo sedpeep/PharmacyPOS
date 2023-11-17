@@ -73,17 +73,18 @@ public class UserManagementPanel extends JPanel {
 
 
     private void deleteUser() {
-        User selectedUser = userList.getSelectedValue();
-        if (selectedUser != null) {
+        int selectedRow = userTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            String username = (String) tableModel.getValueAt(selectedRow, 0);
             int confirm = JOptionPane.showConfirmDialog(
                     this,
-                    "Are you sure you want to delete the user: " + selectedUser.getUsername() + "?",
+                    "Are you sure you want to delete the user: " + username + "?",
                     "Confirm Delete",
                     JOptionPane.YES_NO_OPTION
             );
 
             if (confirm == JOptionPane.YES_OPTION) {
-                boolean success = userService.deleteUser(selectedUser.getUserID());
+                boolean success = userService.deleteUser(username);
                 if (success) {
                     JOptionPane.showMessageDialog(this, "User deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     loadUsers(); // Reload the user list
@@ -95,6 +96,7 @@ public class UserManagementPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Please select a user to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }
+
 
 
     private void addUser() {
@@ -125,46 +127,47 @@ public class UserManagementPanel extends JPanel {
         }
     }
     private void updateUser() {
-        User selectedUser = userList.getSelectedValue();
-        if (selectedUser == null) {
-            JOptionPane.showMessageDialog(this, "Please select a user to update.", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        int selectedRow = userTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            String username = (String) tableModel.getValueAt(selectedRow, 0);
 
-        JTextField usernameField = new JTextField(selectedUser.getUsername(), 20);
-        JPasswordField passwordField = new JPasswordField(20);
-        JComboBox<String> roleComboBox = new JComboBox<>(new String[]{"Manager", "Sales Assistant"});
-        roleComboBox.setSelectedItem(selectedUser.getRole());
+            User selectedUser = userService.getUserByUsername(username);
 
-        JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.add(new JLabel("Username:"));
-        panel.add(usernameField);
-        panel.add(new JLabel("Password: (leave blank to not change)"));
-        panel.add(passwordField);
-        panel.add(new JLabel("Role:"));
-        panel.add(roleComboBox);
+            if (selectedUser != null) {
+                JTextField usernameField = new JTextField(selectedUser.getUsername(), 20);
+                JPasswordField passwordField = new JPasswordField(20); // Leave blank to not change the password
+                JComboBox<String> roleComboBox = new JComboBox<>(new String[]{"Manager", "Sales Assistant"});
+                roleComboBox.setSelectedItem(selectedUser.getRole());
 
-        int result = JOptionPane.showConfirmDialog(this, panel, "Update User", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (result == JOptionPane.OK_OPTION) {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
-            String role = (String) roleComboBox.getSelectedItem();
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                panel.add(new JLabel("Username:"));
+                panel.add(usernameField);
+                panel.add(new JLabel("Password: (leave blank to not change)"));
+                panel.add(passwordField);
+                panel.add(new JLabel("Role:"));
+                panel.add(roleComboBox);
 
-            User updatedUser = new User();
-            updatedUser.setUserID(selectedUser.getUserID());
-            updatedUser.setUsername(username);
-            updatedUser.setPassword(password.isEmpty() ? selectedUser.getPassword() : password);
-            updatedUser.setRole(role);
+                int result = JOptionPane.showConfirmDialog(this, panel, "Update User", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if (result == JOptionPane.OK_OPTION) {
+                    String user_name = usernameField.getText();
+                    String password = new String(passwordField.getPassword());
+                    String role = (String) roleComboBox.getSelectedItem();
+
+                    User updatedUser = new User();
+                    updatedUser.setUserID(selectedUser.getUserID());
+                    updatedUser.setUsername(username);
+                    updatedUser.setPassword(password.isEmpty() ? selectedUser.getPassword() : password);
+                    updatedUser.setRole(role);
 
 
-            boolean success = userService.updateUser(updatedUser);
-            if (success) {
-                loadUsers();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to update user.", "Error", JOptionPane.ERROR_MESSAGE);
+                    boolean success = userService.updateUser(updatedUser);
+                    if (success) {
+                        loadUsers();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Failed to update user.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             }
         }
     }
-
-
 }

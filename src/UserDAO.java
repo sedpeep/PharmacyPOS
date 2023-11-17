@@ -57,10 +57,10 @@ public class UserDAO {
         }
     }
 
-    public boolean deleteUser(int userID) {
+    public boolean deleteUser(String username) {
         String sql = "DELETE FROM Users WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, userID);
+            pstmt.setString(1, username);
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
@@ -68,6 +68,29 @@ public class UserDAO {
             return false;
         }
     }
+    public User getUserByUsername(String username) {
+        String sql = "SELECT * FROM Users WHERE username = ?";
+        User user = null;
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+                    user.setUserID(rs.getInt("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setPassword(rs.getString("password"));
+                    user.setRole(rs.getString("role"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+
+        return user;
+    }
+
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM Users";

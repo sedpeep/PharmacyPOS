@@ -4,7 +4,6 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -32,6 +31,7 @@ public class HomeScreen extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
     }
+
     private void initializeComponents() {
         welcomeLabel = new JLabel("Welcome to POS", SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("Serif", Font.BOLD, 24));
@@ -102,7 +102,7 @@ public class HomeScreen extends JFrame {
 
     public static void main(String[] args) {
         try {
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS","root","12345678");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS","root","");
             UserService userService = new UserService(connection);
             HomeScreen homeScreen = new HomeScreen(userService);
             homeScreen.setVisible(true);

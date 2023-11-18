@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.sql.*;
@@ -25,7 +26,12 @@ public class UserManagementPanel extends JPanel {
         addButton = new JButton("Add");
         updateButton = new JButton("Update");
         deleteButton = new JButton("Delete");
-        tableModel = new DefaultTableModel(new Object[]{"Username", "Role"}, 0);
+        tableModel = new DefaultTableModel(new Object[]{"Username", "Role"}, 0){
+            @Override
+            public boolean isCellEditable(int row, int column){
+                return false;
+            }
+        };
         userTable = new JTable(tableModel);
         userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -43,25 +49,17 @@ public class UserManagementPanel extends JPanel {
         add(buttonPanel, BorderLayout.SOUTH);
         addButton.addActionListener(e->addUser());
         updateButton.addActionListener(e-> updateUser());
+        deleteButton.addActionListener(e->deleteUser());
     }
-    public class UserListCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof User) {
-                User user = (User) value;
-                setText(user.getUsername() + " - " + user.getRole());
-            }
-            return this;
-        }
-    }
-    private void initializeTable() {
-
+    private void customizeTableHeader() {
+        JTableHeader header = userTable.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 25));
     }
 
     private void loadUsers() {
-        // initializeTable();
-        tableModel.setRowCount(0); // Clear the existing table data
+
+        tableModel.setRowCount(0);
+        customizeTableHeader();
         tableModel.addRow(new Object[]{"Username","Role"});
         //Component c = TableCellEditor(tableModel,)
 
@@ -87,7 +85,7 @@ public class UserManagementPanel extends JPanel {
                 boolean success = userService.deleteUser(username);
                 if (success) {
                     JOptionPane.showMessageDialog(this, "User deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    loadUsers(); // Reload the user list
+                    loadUsers();
                 } else {
                     JOptionPane.showMessageDialog(this, "Failed to delete user.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -115,7 +113,7 @@ public class UserManagementPanel extends JPanel {
         int result = JOptionPane.showConfirmDialog(this, panel, "Add New User", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             String username = usernameField.getText();
-            String password = new String(passwordField.getPassword()); // Convert to string for use in User object
+            String password = new String(passwordField.getPassword());
             String role = (String) roleComboBox.getSelectedItem();
 
             boolean success =userService.addUser(new User(username, password, role));
@@ -131,11 +129,12 @@ public class UserManagementPanel extends JPanel {
         if (selectedRow >= 0) {
             String username = (String) tableModel.getValueAt(selectedRow, 0);
 
+
             User selectedUser = userService.getUserByUsername(username);
 
             if (selectedUser != null) {
                 JTextField usernameField = new JTextField(selectedUser.getUsername(), 20);
-                JPasswordField passwordField = new JPasswordField(20); // Leave blank to not change the password
+                JPasswordField passwordField = new JPasswordField(20);
                 JComboBox<String> roleComboBox = new JComboBox<>(new String[]{"Manager", "Sales Assistant"});
                 roleComboBox.setSelectedItem(selectedUser.getRole());
 
@@ -149,25 +148,35 @@ public class UserManagementPanel extends JPanel {
 
                 int result = JOptionPane.showConfirmDialog(this, panel, "Update User", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
-                    String user_name = usernameField.getText();
-                    String password = new String(passwordField.getPassword());
-                    String role = (String) roleComboBox.getSelectedItem();
+                    String newUsername = usernameField.getText();
+                    String newPassword = new String(passwordField.getPassword());
+                    String newRole = (String) roleComboBox.getSelectedItem();
 
-                    User updatedUser = new User();
-                    updatedUser.setUserID(selectedUser.getUserID());
-                    updatedUser.setUsername(username);
-                    updatedUser.setPassword(password.isEmpty() ? selectedUser.getPassword() : password);
-                    updatedUser.setRole(role);
+
+                    if(newUsername.isEmpty()) {
+                        newUsername = selectedUser.getUsername();
+                    }
+                    if(newPassword.isEmpty()) {
+                        newPassword = selectedUser.getPassword();
+                    }
+
+                    User updatedUser = new User( newUsername, newPassword, newRole);
 
 
                     boolean success = userService.updateUser(updatedUser);
                     if (success) {
+                        JOptionPane.showMessageDialog(this, "User updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                         loadUsers();
                     } else {
                         JOptionPane.showMessageDialog(this, "Failed to update user.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
+            } else {
+                JOptionPane.showMessageDialog(this, "User could not be found.", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a user to update.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }
+
 }

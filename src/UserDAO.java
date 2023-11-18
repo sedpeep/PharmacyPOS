@@ -58,7 +58,7 @@ public class UserDAO {
     }
 
     public boolean deleteUser(String username) {
-        String sql = "DELETE FROM Users WHERE user_id = ?";
+        String sql = "DELETE FROM Users WHERE username = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, username);
             int affectedRows = pstmt.executeUpdate();

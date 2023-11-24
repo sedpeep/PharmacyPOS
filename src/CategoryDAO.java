@@ -64,7 +64,17 @@ public class CategoryDAO {
             return false;
         }
     }
-
+    public List<String> getAllCategoriesNames() throws SQLException {
+        List<String> categories = new ArrayList<>();
+        String sql = "SELECT category_name FROM Categories";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                categories.add(rs.getString("category_name"));
+            }
+        }
+        return categories;
+    }
 
 }
 

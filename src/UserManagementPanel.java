@@ -53,14 +53,14 @@ public class UserManagementPanel extends JPanel {
     }
     private void customizeTableHeader() {
         JTableHeader header = userTable.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 25));
+        header.setFont(new Font("Monospaced", Font.BOLD, 20));
     }
 
     private void loadUsers() {
 
         tableModel.setRowCount(0);
-        customizeTableHeader();
         tableModel.addRow(new Object[]{"Username","Role"});
+        customizeTableHeader();
         //Component c = TableCellEditor(tableModel,)
 
         List<User> users = userService.getAllUsers();

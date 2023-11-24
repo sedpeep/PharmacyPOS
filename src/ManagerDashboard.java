@@ -4,6 +4,7 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
 
 public class ManagerDashboard extends JFrame {
     private JMenuBar menuBar;
@@ -69,10 +70,22 @@ public class ManagerDashboard extends JFrame {
         manageInventoryItem.addActionListener(e -> showInventoryManagementPanel());
         salesReportItem.addActionListener(e -> showSalesReportPanel());
         inventoryReportItem.addActionListener(e -> showInventoryReportPanel());
+        salesReportItem.addActionListener(e-> showSalesReportPanel());
         exitItem.addActionListener(e -> returnToLogin());
     }
 
     private void showSalesReportPanel() {
+        try {
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS","root","");
+            OrderDetailService orderDetailService = new OrderDetailService(connection);
+
+            SalesReportPanel salesReportPanel = new SalesReportPanel(orderDetailService);
+            setContentPane(salesReportPanel);
+            validate();
+            repaint();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
     private void showInventoryReportPanel(){
         try {

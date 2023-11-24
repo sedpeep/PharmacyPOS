@@ -19,10 +19,14 @@ public class HomeScreen extends JFrame {
     private JPasswordField passwordField;
     private JButton loginButton;
     private UserService userService;
+    //private ProductService productService;
+
 
     public HomeScreen(UserService userService) {
+
         super("Welcome to POS");
         this.userService = userService;
+        //this.productService= new ProductService();
         initializeComponents();
         initializeListeners();
 
@@ -64,7 +68,6 @@ public class HomeScreen extends JFrame {
         loginPanel.add(passwordPanel);
         loginPanel.add(loginButton);
 
-        // Add the login panel to the frame
         add(loginPanel, BorderLayout.CENTER);
         add(welcomeLabel, BorderLayout.NORTH);
     }
@@ -86,6 +89,15 @@ public class HomeScreen extends JFrame {
                     if("Manager".equalsIgnoreCase(selectedRole)){
                         ManagerDashboard managerDashboard = new ManagerDashboard(userService);
                         managerDashboard.setVisible(true);
+                        HomeScreen.this.dispose();
+                    }else if("Sales Assistant".equalsIgnoreCase(selectedRole)){
+                        SalesAssistantDashboard salesDashboard = null;
+                        try {
+                            salesDashboard = new SalesAssistantDashboard(userService);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        salesDashboard.setVisible(true);
                         HomeScreen.this.dispose();
                     }
 

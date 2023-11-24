@@ -1,4 +1,5 @@
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public class CategoryService {
@@ -19,4 +20,8 @@ public class CategoryService {
     public boolean deleteCategory(int id){
         return  categoryDAO.deleteCategory(id);
     }
+    public List<String> getAllCategoryName() throws SQLException {
+        return categoryDAO.getAllCategoriesNames();
+    }
+
 }

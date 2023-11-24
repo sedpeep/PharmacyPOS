@@ -135,6 +135,22 @@ public class ProductDAO {
             return false;
         }
     }
+    public String getCategoryName(int id){
+        String sql = "SELECT DISTINCT category_name FROM Categories WHERE category_id = ?";
+        String categoryName = null;
+        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+            pstmt.setInt(1, id);
+            try(ResultSet rs = pstmt.executeQuery()){
+                if(rs.next()){
+                    categoryName = rs.getString("category_name");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categoryName;
+    }
+
     public int deleteExpiredProducts() {
         String sql = "DELETE FROM Products WHERE expiration_date < CURDATE()";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -144,6 +160,76 @@ public class ProductDAO {
             return 0;
         }
     }
+    public List<Product> loadProductsFromDatabase() {
+        List<Product> productList = new ArrayList<>();
+        String sql = "SELECT * FROM Products ORDER BY product_id";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Product product = new Product(
+                        rs.getInt("product_id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getDouble("price"),
+                        rs.getInt("quantity"),
+                        rs.getInt("category_id"),
+                        rs.getDate("expiration_date"));
+                        productList.add(product);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productList;
+    }
+    public int getProductsQuantity(int productID) {
+        String sql = "SELECT quantity FROM Products WHERE product_id=?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, productID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("quantity");
+                } else {
+                    throw new IllegalArgumentException("Product with ID " + productID + " not found.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error when fetching product quantity", e);
+        }
+    }
+
+    public List<Product> searchProducts(String name, String category) throws SQLException {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM Products WHERE name LIKE ? ";
+
+        if (!category.equals("All")) {
+            sql += "AND category_id = (SELECT category_id FROM Categories WHERE category_name = ?)";
+        }
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, name + "%");
+
+            if (!category.equals("All")) {
+                pstmt.setString(2, category);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    products.add(new Product(
+                            rs.getInt("product_id"),
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getDouble("price"),
+                            rs.getInt("quantity"),
+                            rs.getInt("category_id"),
+                            rs.getDate("expiration_date")
+                    ));
+                }
+            }
+        }
+        return products;
+    }
+
 
 }
 class Product{

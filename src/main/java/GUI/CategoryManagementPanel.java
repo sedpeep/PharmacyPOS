@@ -1,3 +1,9 @@
+package GUI;
+
+import ServiceLayer.*;
+import DAOLayer.*;
+
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -101,7 +107,7 @@ public class CategoryManagementPanel extends JPanel {
                 frameContainer.revalidate();
                 frameContainer.repaint();
             } else {
-                System.out.println("No parent frame found for CategoryManagementPanel.");
+                System.out.println("No parent frame found for GUI.CategoryManagementPanel.");
             }
         } catch (SQLException e) {
             e.printStackTrace();

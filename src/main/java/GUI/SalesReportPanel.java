@@ -1,7 +1,6 @@
-import java.awt.*;
-import java.sql.SQLException;
-import java.util.Map;
-import javax.swing.*;
+package GUI;
+
+import ServiceLayer.OrderDetailService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -11,6 +10,11 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.SQLException;
+import java.util.Map;
 
 public class SalesReportPanel extends JPanel {
     private OrderDetailService orderDetailService;

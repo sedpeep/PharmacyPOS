@@ -1,3 +1,5 @@
+package DAOLayer;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -12,18 +14,56 @@ public class OrderDetailDAO {
     }
 
     public boolean addOrderDetail(int orderId, int productId, int quantity, double price) {
-        String sql = "INSERT INTO OrderDetails (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, orderId);
-            pstmt.setInt(2, productId);
-            pstmt.setInt(3, quantity);
-            pstmt.setDouble(4, price);
+        String sql1 = "INSERT INTO OrderDetails (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
+        String sql2 = "UPDATE Products SET quantity = quantity - ? WHERE product_id = ? AND quantity >= ?";
+        PreparedStatement insert = null;
+        PreparedStatement update = null;
 
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
+        try{
+            connection.setAutoCommit(false);
+
+            insert=connection.prepareStatement(sql1);
+            insert.setInt(1,orderId);
+            insert.setInt(2,productId);
+            insert.setInt(3,quantity);
+            insert.setDouble(4,price);
+
+            int affectedRows = insert.executeUpdate();
+
+            update = connection.prepareStatement(sql2);
+            update.setInt(1,quantity);
+            update.setInt(2,productId);
+            update.setInt(3,quantity);
+
+            int updatedRows = update.executeUpdate();
+
+            if(affectedRows>0 && updatedRows >0){
+                connection.commit();
+                return true;
+            }
+            else{
+                connection.rollback();
+                return false;
+            }
         } catch (SQLException e) {
+            if(connection != null){
+                try{
+                    connection.rollback();
+                }catch (SQLException ex){
+                    ex.printStackTrace();
+                }
+            }
             e.printStackTrace();
             return false;
+        }finally {
+            try{
+                if(insert!=null) { insert.close();}
+                if (update!=null){update.close();}
+                if(connection!=null){ connection.setAutoCommit(true);}
+
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
         }
     }
     public boolean updateOrderDetail(int orderDetailId, int quantity, double price) {
@@ -151,61 +191,3 @@ public class OrderDetailDAO {
     }
 
 }
-class OrderDetail {
-    private int orderDetailId;
-    private int orderId;
-    private int productId;
-    private int quantity;
-    private double price;
-
-    // Constructor
-    public OrderDetail(int orderDetailId, int orderId, int productId, int quantity, double price) {
-        this.orderDetailId = orderDetailId;
-        this.orderId = orderId;
-        this.productId = productId;
-        this.quantity = quantity;
-        this.price = price;
-    }
-
-    // Getters and Setters
-    public int getOrderDetailId() {
-        return orderDetailId;
-    }
-
-    public void setOrderDetailId(int orderDetailId) {
-        this.orderDetailId = orderDetailId;
-    }
-
-    public int getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
-    }
-
-    public int getProductId() {
-        return productId;
-    }
-
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-}
-

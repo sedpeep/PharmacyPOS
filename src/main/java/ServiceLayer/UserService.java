@@ -1,13 +1,26 @@
+package ServiceLayer;
+
+import DAOLayer.*;
 import java.sql.Connection;
 import java.util.*;
 
 public class UserService {
     private UserDAO userDAO;
+    private User currentUser;
 
     public UserService(Connection connection) {
         this.userDAO = new UserDAO(connection);
     }
-
+    public void setCurrentUser(User user){
+        this.currentUser=user;
+    }
+    public int getCurrentUserID(){
+        if (currentUser!=null){
+            return currentUser.getUserID();
+        }else {
+            throw new IllegalStateException("No user currently logged in");
+        }
+    }
     public User authenticate(String username, String password) {
         return userDAO.verifyLogin(username, password);
     }

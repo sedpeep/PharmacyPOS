@@ -1,9 +1,12 @@
+package ServiceLayer;
+
+import DAOLayer.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 public class CategoryService {
-    private CategoryDAO categoryDAO;
+    private final CategoryDAO categoryDAO;
 
     public CategoryService(Connection connection){
         categoryDAO= new CategoryDAO(connection);

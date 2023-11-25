@@ -1,3 +1,9 @@
+package ServiceLayer;
+
+
+import DAOLayer.OrderDetail;
+import DAOLayer.OrderDetailDAO;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;

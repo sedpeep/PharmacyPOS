@@ -1,3 +1,8 @@
+package GUI;
+
+import ServiceLayer.*;
+import DAOLayer.*;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;

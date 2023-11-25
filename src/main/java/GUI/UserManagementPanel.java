@@ -1,16 +1,15 @@
+package GUI;
+
+import ServiceLayer.UserService;
+import DAOLayer.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.sql.*;
 import java.util.List;
 
 public class UserManagementPanel extends JPanel {
-    private JList<User> userList;
-    private JButton addButton;
-    private JButton updateButton;
-    private JButton deleteButton;
+    private final JButton deleteButton;
     private DefaultListModel<User> listModel;
     private UserService userService;
     private JTable userTable;
@@ -20,11 +19,11 @@ public class UserManagementPanel extends JPanel {
         this.userService = userService;
         setLayout(new BorderLayout());
         listModel = new DefaultListModel<>();
-        userList = new JList<>(listModel);
+        JList<User> userList = new JList<>(listModel);
         JScrollPane scrollPane = new JScrollPane(userList);
 
-        addButton = new JButton("Add");
-        updateButton = new JButton("Update");
+        JButton addButton = new JButton("Add");
+        JButton updateButton = new JButton("Update");
         deleteButton = new JButton("Delete");
         tableModel = new DefaultTableModel(new Object[]{"Username", "Role"}, 0){
             @Override
@@ -34,6 +33,10 @@ public class UserManagementPanel extends JPanel {
         };
         userTable = new JTable(tableModel);
         userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        customizeTableHeader();
+
+        JScrollPane userScroll = new JScrollPane(userTable);
+        this.add(userScroll,BorderLayout.CENTER);
 
         // Load users and populate list
         //initializeTable();
@@ -67,6 +70,7 @@ public class UserManagementPanel extends JPanel {
         for (User user : users) {
             tableModel.addRow(new Object[]{user.getUsername(), user.getRole()});
         }
+
     }
 
 
@@ -128,8 +132,6 @@ public class UserManagementPanel extends JPanel {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow >= 0) {
             String username = (String) tableModel.getValueAt(selectedRow, 0);
-
-
             User selectedUser = userService.getUserByUsername(username);
 
             if (selectedUser != null) {
@@ -148,20 +150,19 @@ public class UserManagementPanel extends JPanel {
 
                 int result = JOptionPane.showConfirmDialog(this, panel, "Update User", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
-                    String newUsername = usernameField.getText();
-                    String newPassword = new String(passwordField.getPassword());
+                    String newUsername = usernameField.getText().trim();
+                    String newPassword = new String(passwordField.getPassword()).trim();
                     String newRole = (String) roleComboBox.getSelectedItem();
 
-
-                    if(newUsername.isEmpty()) {
+                    if (newUsername.isEmpty()) {
                         newUsername = selectedUser.getUsername();
                     }
-                    if(newPassword.isEmpty()) {
+                    if (newPassword.isEmpty()) {
                         newPassword = selectedUser.getPassword();
                     }
 
-                    User updatedUser = new User( newUsername, newPassword, newRole);
-
+                    User updatedUser = new User(newUsername, newPassword, newRole);
+                    updatedUser.setUserID(selectedUser.getUserID()); // Set the user ID
 
                     boolean success = userService.updateUser(updatedUser);
                     if (success) {

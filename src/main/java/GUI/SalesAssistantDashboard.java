@@ -1,3 +1,9 @@
+package GUI;
+
+import DAOLayer.Category;
+import DAOLayer.Product;
+import ServiceLayer.*;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -9,11 +15,12 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SalesAssistantDashboard extends JFrame {
     private static final int QUANTITY_COLUMN_INDEX = 2;
+    private JTable cartTable;
     private JTable table;
     private JMenu fileMenu;
     private JMenuItem exitItem, processTransactionItem;
@@ -21,30 +28,34 @@ public class SalesAssistantDashboard extends JFrame {
     private JComboBox<String> categoryComboBox;
     private JTextField searchField;
     private JButton searchButton, cartButton;
-    private ProductService productService;
-    private CategoryService categoryService;
-    private UserService userService;
+    private final ProductService productService;
+    private final CategoryService categoryService;
+    private final UserService userService;
     private Cart cart;
-    private  JLabel totalLabel ;
+    private JLabel totalLabel ;
     private JButton processOrderButton;
     private JMenuItem mainItem;
+    private OrderService orderService;
+    private OrderDetailService orderDetailService;
     private JPanel bottomPanel;
 
     public SalesAssistantDashboard(UserService user) throws SQLException {
         this.userService = user;
         Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS", "root", "");
+
         productService = new ProductService(connection);
         categoryService = new CategoryService(connection);
+        orderService = new OrderService(connection);
+        orderDetailService = new OrderDetailService(connection);
+
         cart = new Cart();
 
         setTitle("Sales Assistant Dashboard");
         setSize(800, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-
+        totalLabel = new JLabel("Total:$"+cart.calculateTotal());
         initComponents();
-
-        totalLabel = new JLabel("Total: $0.00");
         processOrderButton = new JButton("Process Order");
         initializeMenuListeners();
         setVisible(true);
@@ -55,7 +66,7 @@ public class SalesAssistantDashboard extends JFrame {
         fileMenu = new JMenu("File");
         exitItem = new JMenuItem("Exit");
         //mainMenu = new JMenu("Main Page");
-        mainItem = new JMenuItem("Home Page");
+        mainItem = new JMenu("Home Page");
         fileMenu.add(exitItem);
 
         JMenu transactionMenu = new JMenu("Transaction");
@@ -99,10 +110,15 @@ public class SalesAssistantDashboard extends JFrame {
        // initializeMenuListeners();
     }
     private void initializeMenuListeners() {
-        exitItem.addActionListener(e -> System.exit(0));
         processTransactionItem.addActionListener(e -> showTransactionPanel());
         exitItem.addActionListener(e -> returnToLogin());
-        processOrderButton.addActionListener(e->processOrder());
+        processOrderButton.addActionListener(e-> {
+            try {
+                processOrder();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         cartButton.addActionListener(e -> showTransactionPanel());
         mainItem.addActionListener(e->showMainPanel());
 
@@ -139,7 +155,7 @@ public class SalesAssistantDashboard extends JFrame {
 
     private JPanel createProductsPanel() {
         JPanel productsPanel = new JPanel(new BorderLayout());
-        String[] columnNames = {"Product ID", "Product Name", "Description", "Category", "Price", "Add to Cart"};
+        String[] columnNames = {"Product ID", "Product Name", "Description", "DAOLayer.Category", "Price", "Add to Cart"};
 
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -166,10 +182,25 @@ public class SalesAssistantDashboard extends JFrame {
     public void showMainPanel() {
         mainPanel.removeAll();
 
+        JPanel searchPanel = new JPanel(new FlowLayout());
+        searchField = new JTextField(20);
+        categoryComboBox = new JComboBox<>(getCategories());
+        searchButton = new JButton("Search");
+        cartButton = new JButton("Cart");
+
+
+        searchPanel.add(searchField);
+        searchPanel.add(categoryComboBox);
+        searchPanel.add(searchButton);
+        searchPanel.add(cartButton);
+
+        mainPanel.add(searchPanel,BorderLayout.NORTH);
+
         JPanel productsPanel = createProductsPanel();
         JScrollPane scrollPane = new JScrollPane(productsPanel);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
+        initializeMenuListeners();
         revalidate();
         repaint();
     }
@@ -241,6 +272,7 @@ public class SalesAssistantDashboard extends JFrame {
                 Product product = productService.getProductAtRow(row);
                 cart.addProduct(product);
                 JOptionPane.showMessageDialog(button, label + ": Added to cart!");
+                updateTotalLabel();
             }
             isPushed = false;
             return label;
@@ -270,14 +302,41 @@ public class SalesAssistantDashboard extends JFrame {
     private void updateTotalLabel() {
         double total = cart.calculateTotal();
         totalLabel.setText("Total: " + String.format("$%.2f", total));
+        System.out.println(total);
         totalLabel.revalidate();
         totalLabel.repaint();
     }
-    private void processOrder() {
-        JOptionPane.showMessageDialog(this, "Order processed!");
+    private void processOrder() throws SQLException {
+        if(cart ==null || cart.getItems().isEmpty()){
+            JOptionPane.showMessageDialog(this,"Cart Empty! Add an item to process order");
+            return;
+        }
+        else {
+            try {
+                int userID = userService.getCurrentUserID();
+                int orderID = orderService.addOrder(userID, cart.calculateTotal());
+                if (orderID > 0) {
+                    for (Cart.CartItem item : cart.getItems()) {
+                        boolean flag = orderDetailService.addOrderDetail(orderID, item.getProduct().getProductId(), item.getQuantity(), item.getProduct().getPrice());
+                        if (!flag) {
+                            throw new SQLException("Failed to add ordere detail for product!");
+                        }
+                    }
+
+                }
+                JOptionPane.showMessageDialog(this, "Order processed!");
+                cart.clearCart();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Failed to process to order: " + e.getMessage(), "Order Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
     }
 
     private void returnToLogin() {
+
         HomeScreen loginScreen = new HomeScreen(userService);
         loginScreen.setVisible(true);
         this.setVisible(false);
@@ -291,10 +350,17 @@ public class SalesAssistantDashboard extends JFrame {
         checkoutHeading.setFont(new Font("Monospaced", Font.BOLD, 24));
         mainPanel.add(checkoutHeading, BorderLayout.NORTH);
 
+        JButton clearCartButton = new JButton("Clear Cart");
+        clearCartButton.addActionListener(e-> cart.clearCart());
+
+        JPanel clearCartPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        clearCartPanel.add(clearCartButton);
+        mainPanel.add(clearCartPanel,BorderLayout.NORTH);
+
 
         String[] columnNames = {"ID", "Name", "Quantity", "Price", "Actions"};
         DefaultTableModel model = new DefaultTableModel(columnNames,0);
-        JTable cartTable = new JTable(model){
+        cartTable = new JTable(model){
             public Class getColumnClass(int column){
                 return  getValueAt(0,column).getClass();
             }
@@ -304,10 +370,11 @@ public class SalesAssistantDashboard extends JFrame {
         model = new DefaultTableModel(columnNames, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == QUANTITY_COLUMN_INDEX) {
-                    return QuantityPanel.class;
-                }else {
-                    return super.getColumnClass(columnIndex);
+                switch (columnIndex){
+                    case 2:
+                        return QuantityPanel.class;
+                    default:
+                        return super.getColumnClass(columnIndex);
                 }
             }
         };
@@ -315,18 +382,19 @@ public class SalesAssistantDashboard extends JFrame {
             @Override
             public TableCellRenderer getCellRenderer(int row, int column) {
                 if (column == 2) {
-                    return new DefaultTableCellRenderer() {
+                    return new TableCellRenderer() {
                         @Override
                         public Component getTableCellRendererComponent(JTable table, Object value,
                                                                        boolean isSelected, boolean hasFocus, int row, int column) {
-                            if (column == QUANTITY_COLUMN_INDEX &&  value instanceof QuantityPanel) {
-                                return (Component) value;
+                            if ( value instanceof QuantityPanel) {
+                                return (QuantityPanel) value;
                             }
-                            return super.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
+                            return new DefaultTableCellRenderer().getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
                         }
                     };
+                }else {
+                    return new DefaultTableCellRenderer();
                 }
-                return super.getCellRenderer(row, column);
             }
 
             @Override
@@ -353,7 +421,7 @@ public class SalesAssistantDashboard extends JFrame {
                     item.getProduct().getProductId(),
                     item.getProduct().getName(),
                     quantityPanel,
-                    String.format("$%.2f",item.getProduct().getPrice()),"Actions"
+                    String.format("$%.2f",item.getProduct().getPrice()),"Remove"
             });
         }
         cartTable.getColumn("Actions").setCellRenderer(new ButtonColumnRenderer());
@@ -363,21 +431,24 @@ public class SalesAssistantDashboard extends JFrame {
         cartTable.revalidate();
         cart.repaint();
         JScrollPane tableScrollpane = new JScrollPane(cartTable);
-        mainPanel.add(tableScrollpane,BorderLayout.CENTER);
-        JLabel totalLabel = new JLabel("Total:"+cart.calculateTotal());
+        JPanel receiptPanel = new JPanel(new BorderLayout());
+        receiptPanel.add(tableScrollpane,BorderLayout.CENTER);
 
+        totalLabel = new JLabel("Total"+String.format("$%.2f",cart.calculateTotal()));
+        totalLabel.setFont(new Font("Monospaced",Font.BOLD,20));
 
-        if (bottomPanel == null) {
-            bottomPanel = new JPanel(new BorderLayout());
-            bottomPanel.add(totalLabel,BorderLayout.CENTER);
-            bottomPanel.add(processOrderButton,BorderLayout.EAST);
+        JPanel totalPanel = new JPanel(new BorderLayout());
+        totalPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        totalPanel.add(totalLabel,BorderLayout.EAST);
 
-        }
+        receiptPanel.add(totalPanel,BorderLayout.SOUTH);
 
-        mainPanel.add(bottomPanel,BorderLayout.SOUTH);
-        updateTotalLabel();;
+        mainPanel.add(receiptPanel,BorderLayout.CENTER);
+        mainPanel.add(processOrderButton,BorderLayout.SOUTH);
+        updateTotalLabel();
         revalidate();
         repaint();
+
     }
     class ButtonColumnRenderer extends JButton implements TableCellRenderer {
         JButton removeButton;
@@ -426,15 +497,22 @@ public class SalesAssistantDashboard extends JFrame {
                 int modelRow = table.convertRowIndexToModel(editingRow);
                 if(table.isEditing()){
                     table.getCellEditor().stopCellEditing();
+                    updateTotalLabel();
+                    table.revalidate();
+                    table.repaint();
                 }
                 if(modelRow>=0){
                     cart.removeProduct(modelRow);
                     ((DefaultTableModel) table.getModel()).removeRow(modelRow);
+                    updateTotalLabel();
+                    table.revalidate();
+                    table.repaint();
                 }
                 updateTotalLabel();
                 if(table.getRowCount()==0){
                     JOptionPane.showMessageDialog(this.getComponent(), "The cart is now empty.", "Empty Cart", JOptionPane.INFORMATION_MESSAGE);
                 }
+
             });
         }
 
@@ -459,7 +537,7 @@ public class SalesAssistantDashboard extends JFrame {
                     quantity--;
                     cartItem.setQuantity(quantity);
                     quantityLabel.setText(String.valueOf(quantity));
-                    totalLabel.setText("Total:"+cart.calculateTotal());
+                    updateComponent();
                     this.revalidate();
                     this.repaint();
                 }
@@ -473,8 +551,7 @@ public class SalesAssistantDashboard extends JFrame {
                 if (quantity<availableQuantity){
                 quantity++;
                 cartItem.setQuantity(quantity);
-                quantityLabel.setText(String.valueOf(quantity));
-                updateTotalLabel();
+                updateComponent();
                 table.revalidate();
                 table.repaint();
                 }else{
@@ -485,6 +562,13 @@ public class SalesAssistantDashboard extends JFrame {
             add(quantityLabel);
             add(plusButton);
 
+        }
+        private void updateComponent() {
+            quantityLabel.setText(String.valueOf(quantity));
+            if (cart != null) {
+
+                updateTotalLabel();
+            }
         }
     }
     class Cart extends Component {
@@ -534,6 +618,16 @@ public class SalesAssistantDashboard extends JFrame {
             return total;
         }
 
+        public void clearCart(){
+            if (cart!=null && cart.getItems()!=null){
+                cart.getItems().clear();
+                DefaultTableModel model = (DefaultTableModel) cartTable.getModel();
+                model.setRowCount(0);
+                updateTotalLabel();
+                revalidate();
+                repaint();
+            }
+        }
 
         public List<CartItem> getItems(){
             return items;

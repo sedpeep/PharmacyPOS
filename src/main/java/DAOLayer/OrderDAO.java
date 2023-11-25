@@ -1,3 +1,5 @@
+package DAOLayer;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,17 +11,22 @@ public class OrderDAO {
         this.connection = connection;
     }
 
-    public boolean addOrder(int userId, double total) {
+    public int addOrder(int userId, double total) throws SQLException {
         String sql = "INSERT INTO Orders (user_id, total) VALUES (?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, userId);
-            pstmt.setDouble(2, total);
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, userId);
+            stmt.setDouble(2, total);
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating order failed, no rows affected.");
+            }
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Creating order failed, no ID obtained.");
+                }
+            }
         }
     }
     public boolean updateOrder(int orderId, double total) {
@@ -87,51 +94,5 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return orders;
-    }
-}
-class Order {
-    private int orderId;
-    private int userId;
-    private double total;
-    private Timestamp timestamp;
-
-
-    public Order(int orderId, int userId,Timestamp timestamp, double total) {
-        this.orderId = orderId;
-        this.userId = userId;
-        this.total = total;
-        this.timestamp=timestamp;
-    }
-
-
-    public int getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public double getTotal() {
-        return total;
-    }
-
-    public void setTotal(double total) {
-        this.total = total;
-    }
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
     }
 }

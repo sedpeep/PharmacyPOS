@@ -1,3 +1,7 @@
+package GUI;
+import DAOLayer.*;
+import ServiceLayer.ProductService;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -38,7 +42,7 @@ public class InventoryReportPanel extends JPanel {
 
     private void initializeTables() {
 //
-//        JLabel categoryTitle = new JLabel("Inventory Value by Category");
+//        JLabel categoryTitle = new JLabel("Inventory Value by DAOLayer.Category");
 //        categoryTitle.setFont(new Font("Monospaced", Font.BOLD, 18));
 //        add(categoryTitle, BorderLayout.NORTH);
 //
@@ -48,7 +52,7 @@ public class InventoryReportPanel extends JPanel {
 //        add(lowStockTitle, BorderLayout.EAST);
 
 
-        String[] categorySummaryColumns = {"Category", "Number of Items", "Inventory Value"};
+        String[] categorySummaryColumns = {"DAOLayer.Category", "Number of Items", "Inventory Value"};
         DefaultTableModel categorySummaryModel = new DefaultTableModel(categorySummaryColumns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {

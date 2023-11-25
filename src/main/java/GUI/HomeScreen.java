@@ -1,13 +1,15 @@
+package GUI;
+
+import ServiceLayer.UserService;
+import DAOLayer.User;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
 
 public class HomeScreen extends JFrame {
     private JLabel welcomeLabel;
@@ -19,14 +21,15 @@ public class HomeScreen extends JFrame {
     private JPasswordField passwordField;
     private JButton loginButton;
     private UserService userService;
-    //private ProductService productService;
+
 
 
     public HomeScreen(UserService userService) {
 
         super("Welcome to POS");
+        this.setSize(500,500);
         this.userService = userService;
-        //this.productService= new ProductService();
+        //this.productService= new ServiceLayer.ProductService();
         initializeComponents();
         initializeListeners();
 
@@ -87,10 +90,12 @@ public class HomeScreen extends JFrame {
                             "Success",
                             JOptionPane.INFORMATION_MESSAGE);
                     if("Manager".equalsIgnoreCase(selectedRole)){
+                        userService.setCurrentUser(user);
                         ManagerDashboard managerDashboard = new ManagerDashboard(userService);
                         managerDashboard.setVisible(true);
                         HomeScreen.this.dispose();
                     }else if("Sales Assistant".equalsIgnoreCase(selectedRole)){
+                        userService.setCurrentUser(user);
                         SalesAssistantDashboard salesDashboard = null;
                         try {
                             salesDashboard = new SalesAssistantDashboard(userService);
@@ -110,6 +115,21 @@ public class HomeScreen extends JFrame {
                 }
             }
         });
+    }
+    public JTextField getUsernameTextField() {
+        return usernameTextField;
+    }
+
+    public JPasswordField getPasswordField() {
+        return passwordField;
+    }
+
+    public JComboBox<String> getRoleComboBox() {
+        return roleComboBox;
+    }
+
+    public JButton getLoginButton() {
+        return loginButton;
     }
 
     public static void main(String[] args) {

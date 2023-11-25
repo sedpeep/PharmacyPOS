@@ -1,10 +1,18 @@
+package GUI;
+
+import GUI.*;
+import ServiceLayer.CategoryService;
+import ServiceLayer.OrderDetailService;
+import ServiceLayer.ProductService;
+import ServiceLayer.UserService;
+
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Map;
 
 public class ManagerDashboard extends JFrame {
     private JMenuBar menuBar;
@@ -51,10 +59,37 @@ public class ManagerDashboard extends JFrame {
         menuBar.add(manageMenu);
         menuBar.add(reportsMenu);
         menuBar.add(systemMenu);
-
-
         setJMenuBar(menuBar);
         initializeMenuListners(userService);
+
+
+        JPanel comboBoxPanel = new JPanel();
+        comboBoxPanel.setLayout(new BoxLayout(comboBoxPanel, BoxLayout.Y_AXIS));
+        comboBoxPanel.setBackground(Color.WHITE);
+
+        JLabel manageLabel = new JLabel("Manage:");
+        manageLabel.setFont(new Font("Serif", Font.BOLD, 18));
+        String[] manageOptions = {"Users", "Products", "Inventory"};
+        JComboBox<String> manageComboBox = new JComboBox<>(manageOptions);
+        manageComboBox.setAlignmentX(Component.LEFT_ALIGNMENT); // Align to the left
+
+        // Reports combo box
+        JLabel reportsLabel = new JLabel("Reports:");
+        reportsLabel.setFont(new Font("Serif", Font.BOLD, 18));
+        String[] reportOptions = {"Sales Reports", "Inventory Reports"};
+        JComboBox<String> reportsComboBox = new JComboBox<>(reportOptions);
+        reportsComboBox.setAlignmentX(Component.LEFT_ALIGNMENT); // Align to the left
+
+        // Add components to the panel
+        comboBoxPanel.add(manageLabel);
+        comboBoxPanel.add(manageComboBox);
+        comboBoxPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacer
+        comboBoxPanel.add(reportsLabel);
+        comboBoxPanel.add(reportsComboBox);
+
+        // Add the combo box panel to the frame
+        add(comboBoxPanel, BorderLayout.WEST);
+
 
 
     }

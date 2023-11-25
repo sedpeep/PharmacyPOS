@@ -1,4 +1,7 @@
+package ServiceLayer;
+import DAOLayer.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public class OrderService {
@@ -6,7 +9,7 @@ public class OrderService {
     public OrderService(Connection connection){
         orderDAO = new OrderDAO(connection);
     }
-    public boolean addOrder(int userId, double total) {
+    public int addOrder(int userId, double total) throws SQLException {
         return  orderDAO.addOrder(userId,total);
     }
     public boolean updateOrder(int orderId, double total){

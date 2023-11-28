@@ -26,5 +26,7 @@ public class CategoryService {
     public List<String> getAllCategoryName() throws SQLException {
         return categoryDAO.getAllCategoriesNames();
     }
-
+    public List<Products> getAllProductsByCategoryID(int categoryId){
+        return categoryDAO.getAllProductsByCategoryID(categoryId);
+    }
 }

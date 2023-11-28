@@ -1,6 +1,5 @@
 package GUI;
 
-import GUI.*;
 import ServiceLayer.CategoryService;
 import ServiceLayer.OrderDetailService;
 import ServiceLayer.ProductService;
@@ -16,11 +15,15 @@ import java.sql.SQLException;
 
 public class ManagerDashboard extends JFrame {
     private JMenuBar menuBar;
+    private JPanel currentPanel;
+    private JButton productsPage,userPage,inventoryPage,salesReport,inventoryReport;
     private JMenu fileMenu, manageMenu, reportsMenu, systemMenu;
-    private JMenuItem exitItem, manageUsersItem, manageProductsItem, manageInventoryItem, salesReportItem, inventoryReportItem, systemSettingsItem;
+    private JMenuItem mainPage,exitItem, manageUsersItem, manageProductsItem, manageInventoryItem, salesReportItem, inventoryReportItem, systemSettingsItem;
     private UserService user;
+    private  JLabel welcome;
     public ManagerDashboard(UserService userService) {
         this.user=userService;
+        this.currentPanel =  null;
         setTitle("Manager Dashboard");
         setSize(800, 600);
         setLocationRelativeTo(null);
@@ -32,7 +35,9 @@ public class ManagerDashboard extends JFrame {
         menuBar = new JMenuBar();
 
         fileMenu = new JMenu("File");
+        mainPage = new JMenuItem("Main Page");
         exitItem = new JMenuItem("Exit");
+        fileMenu.add(mainPage);
         fileMenu.add(exitItem);
 
         manageMenu = new JMenu("Manage");
@@ -60,38 +65,8 @@ public class ManagerDashboard extends JFrame {
         menuBar.add(reportsMenu);
         menuBar.add(systemMenu);
         setJMenuBar(menuBar);
+        showMainPage();
         initializeMenuListners(userService);
-
-
-        JPanel comboBoxPanel = new JPanel();
-        comboBoxPanel.setLayout(new BoxLayout(comboBoxPanel, BoxLayout.Y_AXIS));
-        comboBoxPanel.setBackground(Color.WHITE);
-
-        JLabel manageLabel = new JLabel("Manage:");
-        manageLabel.setFont(new Font("Serif", Font.BOLD, 18));
-        String[] manageOptions = {"Users", "Products", "Inventory"};
-        JComboBox<String> manageComboBox = new JComboBox<>(manageOptions);
-        manageComboBox.setAlignmentX(Component.LEFT_ALIGNMENT); // Align to the left
-
-        // Reports combo box
-        JLabel reportsLabel = new JLabel("Reports:");
-        reportsLabel.setFont(new Font("Serif", Font.BOLD, 18));
-        String[] reportOptions = {"Sales Reports", "Inventory Reports"};
-        JComboBox<String> reportsComboBox = new JComboBox<>(reportOptions);
-        reportsComboBox.setAlignmentX(Component.LEFT_ALIGNMENT); // Align to the left
-
-        // Add components to the panel
-        comboBoxPanel.add(manageLabel);
-        comboBoxPanel.add(manageComboBox);
-        comboBoxPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacer
-        comboBoxPanel.add(reportsLabel);
-        comboBoxPanel.add(reportsComboBox);
-
-        // Add the combo box panel to the frame
-        add(comboBoxPanel, BorderLayout.WEST);
-
-
-
     }
 
     private void initializeMenuListners(UserService userService) {
@@ -101,28 +76,94 @@ public class ManagerDashboard extends JFrame {
                 showUserManagementPanel(userService);
             }
         });
+        mainPage.addActionListener(e->showMainPage());
         manageProductsItem.addActionListener(e -> showProductManagementPanel());
         manageInventoryItem.addActionListener(e -> showInventoryManagementPanel());
         salesReportItem.addActionListener(e -> showSalesReportPanel());
         inventoryReportItem.addActionListener(e -> showInventoryReportPanel());
         salesReportItem.addActionListener(e-> showSalesReportPanel());
         exitItem.addActionListener(e -> returnToLogin());
-    }
 
-    private void showSalesReportPanel() {
+        productsPage.addActionListener(e -> showProductManagementPanel());
+        userPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showUserManagementPanel(userService);
+            }
+        });
+        inventoryPage.addActionListener(e ->showInventoryManagementPanel());
+
+        salesReport.addActionListener(e -> showSalesReportPanel());
+        inventoryReport.addActionListener(e -> showInventoryReportPanel());
+    }
+    public void showMainPage(){
+        this.getContentPane().removeAll();
+
+        JPanel mainMenuPanel = new JPanel(new GridBagLayout());
+
+
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10); // Top, left, bottom, right padding
+
+         welcome = new JLabel("Welcome to Manager Dashboard", SwingConstants.CENTER);
+        welcome.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        gbc.anchor = GridBagConstraints.CENTER;
+        mainMenuPanel.add(welcome, gbc);
+
+        JLabel manageItems = new JLabel("Manage:", SwingConstants.LEFT);
+        manageItems.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        gbc.anchor = GridBagConstraints.LINE_START;
+        mainMenuPanel.add(manageItems, gbc);
+
+        productsPage = new JButton("Products");
+        userPage = new JButton("Users");
+        inventoryPage = new JButton("Inventory");
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        mainMenuPanel.add(productsPage, gbc);
+        mainMenuPanel.add(userPage, gbc);
+        mainMenuPanel.add(inventoryPage, gbc);
+
+        JLabel reportGenerate = new JLabel("Reports:", SwingConstants.LEFT);
+        reportGenerate.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        gbc.anchor = GridBagConstraints.LINE_START;
+        mainMenuPanel.add(reportGenerate, gbc);
+
+        salesReport = new JButton("Sales Report");
+        inventoryReport = new JButton("Inventory Report");
+
+        mainMenuPanel.add(salesReport, gbc);
+        mainMenuPanel.add(inventoryReport, gbc);
+
+        // Add some space before the last component if needed
+        // gbc.weighty = 1; // Uncomment this line if you want the components to be at the top
+        this.add(mainMenuPanel, BorderLayout.CENTER);
+        this.currentPanel=mainMenuPanel;
+        this.validate();
+        this.repaint();
+
+        initializeMenuListners(user);
+
+
+    }
+    public void showSalesReportPanel() {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS","root","");
             OrderDetailService orderDetailService = new OrderDetailService(connection);
 
             SalesReportPanel salesReportPanel = new SalesReportPanel(orderDetailService);
             setContentPane(salesReportPanel);
+            this.currentPanel=salesReportPanel;
             validate();
             repaint();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    private void showInventoryReportPanel(){
+    public void showInventoryReportPanel(){
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS","root","");
             ProductService productService = new ProductService(connection);
@@ -131,6 +172,7 @@ public class ManagerDashboard extends JFrame {
             }
             InventoryReportPanel inventoryReportPanel = new InventoryReportPanel(productService);
             setContentPane(inventoryReportPanel);
+            this.currentPanel=inventoryReportPanel;
             validate();
             repaint();
         } catch (SQLException e) {
@@ -138,7 +180,7 @@ public class ManagerDashboard extends JFrame {
         }
     }
 
-    private void returnToLogin() {
+    public void returnToLogin() {
 
         HomeScreen loginScreen = new HomeScreen(user);
         loginScreen.setVisible(true);
@@ -146,37 +188,44 @@ public class ManagerDashboard extends JFrame {
         this.setVisible(false);
         this.dispose();
     }
-    private void showProductManagementPanel() {
+    public void showProductManagementPanel() {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS","root","");
             CategoryService categoryService = new CategoryService(connection);
             CategoryManagementPanel productManagementPanel = new CategoryManagementPanel(categoryService);
             setContentPane(productManagementPanel);
+            this.currentPanel=productManagementPanel;
             validate();
             repaint();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    private void showUserManagementPanel(UserService userService) {
+    public void showUserManagementPanel(UserService userService) {
         UserManagementPanel userManagementPanel = new UserManagementPanel(userService);
         setContentPane(userManagementPanel);
+        this.currentPanel=userManagementPanel;
         validate();
         repaint();
     }
-    private void showInventoryManagementPanel() {
+    public void showInventoryManagementPanel() {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS", "root", "");
             ProductService productService = new ProductService(connection);
             InventoryManagementPanel inventoryManagementPanel = new InventoryManagementPanel(productService);
             setContentPane(inventoryManagementPanel);
+            this.currentPanel= inventoryManagementPanel;
             validate();
             repaint();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
-
+    public JLabel getWelcomeLabel(){
+        return welcome;
+    }
+    public JPanel getCurrentPanel(){
+        return currentPanel;
+    }
 
 }

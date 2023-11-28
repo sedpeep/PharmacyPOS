@@ -76,7 +76,7 @@ public class CategoryManagementPanel extends JPanel {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void initializeCategoryTable() {
+    public void initializeCategoryTable() {
         categoryTableModel = new DefaultTableModel(new Object[]{"Category ID", "Category Name"}, 0){
             @Override
             public boolean isCellEditable(int row, int column){
@@ -93,7 +93,7 @@ public class CategoryManagementPanel extends JPanel {
         JTableHeader header = categoryTable.getTableHeader();
         header.setFont(new Font("Monospaced", Font.BOLD, 25));
     }
-    private void displayProductsForCategory(int categoryId) {
+    public void displayProductsForCategory(int categoryId) {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/PharmacyPOS", "root", "");
             ProductService productService = new ProductService(connection);
@@ -107,7 +107,7 @@ public class CategoryManagementPanel extends JPanel {
                 frameContainer.revalidate();
                 frameContainer.repaint();
             } else {
-                System.out.println("No parent frame found for GUI.CategoryManagementPanel.");
+                System.out.println("No parent frame found for CategoryManagementPanel.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -118,7 +118,7 @@ public class CategoryManagementPanel extends JPanel {
 
 
 
-    private void loadCategories() {
+    public void loadCategories() {
         categoryTableModel.setRowCount(0);
         customizeTableHeader();
         List<Category> categories = categoryService.getAllCategories();
@@ -207,6 +207,40 @@ public class CategoryManagementPanel extends JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Please select a category to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
+    }
+    public DefaultTableModel getCategoryTableModel(){
+        return this.categoryTableModel;
+    }
+
+    public void triggerAddCategory(Category newCategoryName) {
+      boolean success =  categoryService.addCategory(newCategoryName);
+      if(success){
+          initializeCategoryTable();
+          loadCategories();
+      }
+    }
+    public void triggerUpdateCategory(Category newCategoryName) {
+        boolean success =  categoryService.updateCategory(newCategoryName);
+        if(success){
+            initializeCategoryTable();
+            loadCategories();
+        }
+    }
+    public void triggerDeleteCategory(Category newCategoryName) {
+        int id = newCategoryName.getCategoryId();
+        boolean success =  categoryService.deleteCategory(id);
+        if(success){
+            initializeCategoryTable();
+            loadCategories();
+        }
+    }
+
+    public JButton getShowProductsButton() {
+        return showProductsButton;
+    }
+
+    public JTable getCategoryTable() {
+        return categoryTable;
     }
 
 }

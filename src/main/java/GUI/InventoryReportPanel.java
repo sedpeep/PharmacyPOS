@@ -52,7 +52,7 @@ public class InventoryReportPanel extends JPanel {
 //        add(lowStockTitle, BorderLayout.EAST);
 
 
-        String[] categorySummaryColumns = {"DAOLayer.Category", "Number of Items", "Inventory Value"};
+        String[] categorySummaryColumns = {"Category", "Number of Items", "Inventory Value"};
         DefaultTableModel categorySummaryModel = new DefaultTableModel(categorySummaryColumns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -92,7 +92,7 @@ public class InventoryReportPanel extends JPanel {
         Map<String, Double> categoryValue = new HashMap<>();
         double totalValue = 0;
 
-        List<Product> products = productService.getAllProducts();
+        List<Products> products = productService.getAllProducts();
         if (products == null) {
             JOptionPane.showMessageDialog(this, "Error fetching products.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -103,7 +103,7 @@ public class InventoryReportPanel extends JPanel {
         categorySummaryModel.setRowCount(0);
         lowStockModel.setRowCount(0);
 
-        for (Product product : products) {
+        for (Products product : products) {
             double value = product.getPrice() * product.getQuantity();
             totalValue += value;
             String category = productService.getCategoryName(product.getCategoryId());

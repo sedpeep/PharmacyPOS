@@ -1,10 +1,12 @@
 package GUI;
 
+import DAOLayer.User;
 import ServiceLayer.UserService;
-import DAOLayer.*;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 
@@ -55,11 +57,26 @@ public class UserManagementPanel extends JPanel {
         deleteButton.addActionListener(e->deleteUser());
     }
     private void customizeTableHeader() {
-        JTableHeader header = userTable.getTableHeader();
-        header.setFont(new Font("Monospaced", Font.BOLD, 20));
+         JTableHeader header = userTable.getTableHeader();
+        header.setFont(new Font("Monospaced", Font.BOLD, 12)); // Set the font to Monospaced, Bold, and size 12
+
+        TableCellRenderer renderer = header.getDefaultRenderer();
+        header.setDefaultRenderer(new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component comp = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (comp instanceof JLabel) {
+                    JLabel label = (JLabel) comp;
+                    if (value.equals("Username") || value.equals("Role")) {
+                        label.setFont(new Font("Monospaced", Font.BOLD, 12)); // Set the font specifically for "Username" and "Role"
+                    }
+                }
+                return comp;
+            }
+        });
     }
 
-    private void loadUsers() {
+    public void loadUsers() {
 
         tableModel.setRowCount(0);
         tableModel.addRow(new Object[]{"Username","Role"});
@@ -179,5 +196,33 @@ public class UserManagementPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Please select a user to update.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }
+    public DefaultTableModel getTableModel(){
+        return this.tableModel;
+    }
+    public void triggerAddUser(String username, String password, String role) {
+      boolean success =  userService.addUser(new User(username, password, role));
+      if (success) {
+          loadUsers();
+      }
+    }
+
+    public void triggerUpdateUser(String username, String newPassword, String newRole) {
+
+        User user = new User(username, newPassword, newRole);
+        boolean success = userService.updateUser(user);
+        if(success) {
+            loadUsers();
+        }
+    }
+
+    public void triggerDeleteUser(String username) {
+       boolean success = userService.deleteUser(username);
+        if(success) {
+            loadUsers();
+        }
+    }
+
+
+
 
 }

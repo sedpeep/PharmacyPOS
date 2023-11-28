@@ -40,7 +40,7 @@ public class InventoryManagementPanel extends JPanel {
         header.setFont(new Font("Monospaced", Font.BOLD, 25));
     }
     private void initializeInventoryTable() {
-        String[] columnNames = {"Product ID", "DAOLayer.Category ID", "Name", "Quantity", "Expiration Date"};
+        String[] columnNames = {"Product ID", "Category ID", "Name", "Quantity", "Expiration Date"};
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -54,8 +54,8 @@ public class InventoryManagementPanel extends JPanel {
     }
     private void loadInventoryData(DefaultTableModel tableModel) {
         tableModel.setRowCount(0);
-        List<Product> products = productService.getAllProducts();
-        for (Product product : products) {
+        List<Products> products = productService.getAllProducts();
+        for (Products product : products) {
             Object[] row = new Object[]{
                     product.getProductId(),
                     product.getCategoryId(),

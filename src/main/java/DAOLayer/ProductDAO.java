@@ -11,8 +11,8 @@ public class ProductDAO {
         this.connection = connection;
     }
 
-    public List<Product> getProductsByCategory(int categoryId) {
-        List<Product> products = new ArrayList<>();
+    public List<Products> getProductsByCategory(int categoryId) {
+        List<Products> products = new ArrayList<>();
         String sql = "SELECT * FROM Products WHERE category_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -20,7 +20,7 @@ public class ProductDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    Product product = new Product(
+                    Products product = new Products(
                             rs.getInt("product_id"), // Retrieve the product_id from the ResultSet
                             rs.getString("name"),
                             rs.getString("description"),
@@ -37,14 +37,14 @@ public class ProductDAO {
         }
         return products;
     }
-    public List<Product> getAllProducts() {
-        List<Product> products = new ArrayList<>();
+    public List<Products> getAllProducts() {
+        List<Products> products = new ArrayList<>();
         String sql = "SELECT * FROM Products";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                Product product = new Product(
+                Products product = new Products(
                         rs.getInt("product_id"),
                         rs.getString("name"),
                         rs.getString("description"),
@@ -61,7 +61,7 @@ public class ProductDAO {
         return products;
     }
 
-    public boolean addProduct(Product product) {
+    public boolean addProduct(Products product) {
         String sql = "INSERT INTO Products (name, description, price, quantity, category_id, expiration_date) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, product.getName());
@@ -92,7 +92,7 @@ public class ProductDAO {
     }
 
 
-    public boolean updateProduct(Product product) {
+    public boolean updateProduct(Products product) {
         String sql = "UPDATE Products SET name = ?, description = ?, price = ?, quantity = ?, category_id = ?, expiration_date = ? WHERE product_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getName());
@@ -162,13 +162,13 @@ public class ProductDAO {
             return 0;
         }
     }
-    public List<Product> loadProductsFromDatabase() {
-        List<Product> productList = new ArrayList<>();
+    public List<Products> loadProductsFromDatabase() {
+        List<Products> productList = new ArrayList<>();
         String sql = "SELECT * FROM Products ORDER BY product_id";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                Product product = new Product(
+                Products product = new Products(
                         rs.getInt("product_id"),
                         rs.getString("name"),
                         rs.getString("description"),
@@ -200,8 +200,8 @@ public class ProductDAO {
         }
     }
 
-    public List<Product> searchProducts(String name, String category) throws SQLException {
-        List<Product> products = new ArrayList<>();
+    public List<Products> searchProducts(String name, String category) throws SQLException {
+        List<Products> products = new ArrayList<>();
         String sql = "SELECT * FROM Products WHERE name LIKE ? ";
 
         if (!category.equals("All")) {
@@ -217,7 +217,7 @@ public class ProductDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    products.add(new Product(
+                    products.add(new Products(
                             rs.getInt("product_id"),
                             rs.getString("name"),
                             rs.getString("description"),

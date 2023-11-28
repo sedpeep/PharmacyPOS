@@ -1,7 +1,7 @@
 package GUI;
 
 import DAOLayer.Category;
-import DAOLayer.Product;
+import DAOLayer.Products;
 import ServiceLayer.*;
 
 import javax.swing.*;
@@ -33,6 +33,7 @@ public class SalesAssistantDashboard extends JFrame {
     private final UserService userService;
     private Cart cart;
     private JLabel totalLabel ;
+    private JMenu mainMenu;
     private JButton processOrderButton;
     private JMenuItem mainItem;
     private OrderService orderService;
@@ -65,9 +66,10 @@ public class SalesAssistantDashboard extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         fileMenu = new JMenu("File");
         exitItem = new JMenuItem("Exit");
-        //mainMenu = new JMenu("Main Page");
-        mainItem = new JMenu("Home Page");
+         mainMenu = new JMenu("Main Page");
+         mainItem = new JMenu("Home Page");
         fileMenu.add(exitItem);
+        mainMenu.add(mainItem);
 
         JMenu transactionMenu = new JMenu("Transaction");
         processTransactionItem = new JMenuItem("Process Transaction");
@@ -76,7 +78,7 @@ public class SalesAssistantDashboard extends JFrame {
 
         menuBar.add(fileMenu);
         menuBar.add(transactionMenu);
-        menuBar.add(mainItem);
+        menuBar.add(mainMenu);
 
         setJMenuBar(menuBar);
 
@@ -128,7 +130,7 @@ public class SalesAssistantDashboard extends JFrame {
                 String searchText = searchField.getText();
                 String selectedCategory = (String) categoryComboBox.getSelectedItem();
                 try {
-                    List<Product> foundProducts = productService.searchProducts(searchText, selectedCategory);
+                    List<Products> foundProducts = productService.searchProducts(searchText, selectedCategory);
                     updateProductTable(foundProducts);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -207,8 +209,8 @@ public class SalesAssistantDashboard extends JFrame {
 
     private void loadProducts(DefaultTableModel model) {
         try {
-            List<Product> products = productService.getAllProducts();
-            for (Product product : products) {
+            List<Products> products = productService.getAllProducts();
+            for (Products product : products) {
                 model.addRow(new Object[]{
                         product.getProductId(),
                         product.getName(),
@@ -269,7 +271,7 @@ public class SalesAssistantDashboard extends JFrame {
         public Object getCellEditorValue() {
             if (isPushed) {
                 int row = table.getSelectedRow();
-                Product product = productService.getProductAtRow(row);
+                Products product = productService.getProductAtRow(row);
                 cart.addProduct(product);
                 JOptionPane.showMessageDialog(button, label + ": Added to cart!");
                 updateTotalLabel();
@@ -284,10 +286,10 @@ public class SalesAssistantDashboard extends JFrame {
         }
     }
 
-    private void updateProductTable(List<Product> products) {
+    private void updateProductTable(List<Products> products) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
-        for (Product product : products) {
+        for (Products product : products) {
             model.addRow(new Object[]{
                     product.getProductId(),
                     product.getName(),
@@ -574,7 +576,7 @@ public class SalesAssistantDashboard extends JFrame {
     class Cart extends Component {
         private List<CartItem> items = new ArrayList<>();
 
-        public void addProduct(Product product) {
+        public void addProduct(Products product) {
             for (CartItem item : items) {
                 if (item.getProduct().getProductId() == product.getProductId()) {
                     item.incrementQuantity();
@@ -633,15 +635,15 @@ public class SalesAssistantDashboard extends JFrame {
             return items;
         }
         public class CartItem {
-            private Product product;
+            private Products product;
             private int quantity;
 
-            public CartItem(Product product, int quantity) {
+            public CartItem(Products product, int quantity) {
                 this.product = product;
                 this.quantity = quantity;
             }
 
-            public Product getProduct() {
+            public Products getProduct() {
                 return product;
             }
 

@@ -63,8 +63,8 @@ public class ProductDisplayPanel extends JPanel {
     private void loadProducts(int categoryId) {
         productTableModel.setRowCount(0);
         customizeTableHeader();
-        List<Product> products = productService.getAllProductsByID(categoryId);
-        for (Product product : products) {
+        List<Products> products = productService.getAllProductsByID(categoryId);
+        for (Products product : products) {
             productTableModel.addRow(new Object[]{product.getProductId(), product.getName(), product.getDescription(), product.getPrice(), product.getQuantity(), product.getExpirationDate()});
         }
     }
@@ -119,7 +119,7 @@ public class ProductDisplayPanel extends JPanel {
                     return;
                 }
 
-                Product newProduct = new Product(0,name, description, price, quantity, currentCategoryId, expirationDate);
+                Products newProduct = new Products(0,name, description, price, quantity, currentCategoryId, expirationDate);
                 boolean success = productService.addProduct(newProduct);
                 if (success) {
                     loadProducts(currentCategoryId);
@@ -182,7 +182,7 @@ public class ProductDisplayPanel extends JPanel {
                         JOptionPane.showMessageDialog(this, "Expiration date must be later than the current date.", "Invalid Expiration Date", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
-                    Product updatedProduct = new Product(0,newName, newDescription, newPrice, newQuantity, currentCategoryId, newExpirationDate);
+                    Products updatedProduct = new Products(0,newName, newDescription, newPrice, newQuantity, currentCategoryId, newExpirationDate);
                     updatedProduct.setProductId(productId);
 
                     boolean success = productService.updateProduct(updatedProduct);
@@ -214,6 +214,44 @@ public class ProductDisplayPanel extends JPanel {
             }
         } else {
             JOptionPane.showMessageDialog(this, "Please select a product to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public DefaultTableModel getProductTableModel() {
+        return productTableModel;
+    }
+
+    public JTable getProductTable() {
+        return productTable;
+    }
+
+    public JButton getUpdateProductButton() {
+        return updateProductButton;
+    }
+
+    public JButton getAddProductButton() {
+        return addProductButton;
+    }
+
+    public JButton getDeleteProductButton() {
+        return deleteProductButton;
+    }
+    public void addProduct(Products p,int id){
+        boolean sucess = productService.addProduct(p);
+        if(sucess){
+            loadProducts(id);
+        }
+    }
+    public void updateProduct(Products p,int id){
+        boolean sucess = productService.updateProduct(p);
+        if(sucess){
+            loadProducts(id);
+        }
+    }
+    public void deleteProduct(int categoryID,int id){
+        boolean sucess = productService.deleteProduct(id);
+        if(sucess){
+            loadProducts(categoryID);
         }
     }
 

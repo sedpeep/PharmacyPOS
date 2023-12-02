@@ -1,6 +1,6 @@
 # Pharmacy Management System
 
-This Pharmacy Management System is a Java application designed for managing pharmacy operations such as product search, adding products to a cart, and processing orders. It provides a user-friendly interface for sales assistants to perform their tasks efficiently.
+This Pharmacy Management System is a Java application designed for managing pharmacy operations such as product search, adding products to a cart, and processing orders. It provides a user-friendly interface for sales assistants and manager to perform their tasks efficiently.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ Click the "+" icon and select "Data Source" -> "MySQL."
 Enter your MySQL username and password, and configure the connection settings.
 
 **3. Import Database Schema:**
-    Open the SQL file provided in the project (e.g., pharmacy_management_system.sql) in a MySQL database client.
+    Open the SQL file provided in the project (e.g., PharmacyPOS.sql) in a MySQL database client.
 Execute the SQL script to create the necessary tables and seed data.
 
 **4. Run the Application:**

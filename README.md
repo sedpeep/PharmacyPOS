@@ -19,7 +19,7 @@ Follow these steps to set up and run the Pharmacy Management System:
 1. **Clone the Repository**: Clone this GitHub repository to your local machine using Git or by downloading the ZIP archive.
 
    ```shell
-   git clone https://github.com/yourusername/pharmacy-management-system.git
+   git clone https://github.com/sedpeep/PharmacyPOS.git
 **1. Configure Database Connection:**
       Open the Constants.java file located in the GUI package.
 Update the DB_USERNAME and DB_PASSWORD variables with your MySQL username and password.
